@@ -1,20 +1,18 @@
+import nest_asyncio
+import os
+import csv
+import re
 import asyncio
 from telethon import TelegramClient
-import csv
-import os
-import re
 from dotenv import load_dotenv
-import nest_asyncio
-from datetime import datetime
 
-# Allow nested async calls in Jupyter
+# Apply nest_asyncio to allow nested event loops
 nest_asyncio.apply()
 
 # Load environment variables from .env file
 load_dotenv('.env')
 api_id = os.getenv('TG_API_ID')
 api_hash = os.getenv('TG_API_HASH')
-
 
 # Function to scrape messages from Telegram channels and save to CSV
 async def scrape_telegram_channels(client, channel, csv_file='telegram_data.csv'):
@@ -27,9 +25,9 @@ async def scrape_telegram_channels(client, channel, csv_file='telegram_data.csv'
     """
     await client.start()
     with open(csv_file, 'w', newline='', encoding='utf-8') as file:
-        limit=200
+        limit = 300
         writer = csv.writer(file)
-        writer.writerow(['Message Date', 'Sender ID','Message ID', 'Product Description'])  # CSV header
+        writer.writerow(['Message Date', 'Sender ID', 'Message ID', 'Product Description'])  # CSV header
 
         for channel_username in channel:
             entity = await client.get_entity(channel_username)
@@ -37,17 +35,19 @@ async def scrape_telegram_channels(client, channel, csv_file='telegram_data.csv'
             print(f"Scraping data from {channel_username} ({channel_title})...")
 
             async for message in client.iter_messages(entity, limit=limit):
-                amharic_reg=r'[\u1200-\u137F0-9\+\-_]+'
-                amharic_text = ' '.join(re.findall(amharic_reg,message.message ))
+                amharic_reg = r'[\u1200-\u137F0-9\+\-_]+'
+                amharic_text = ' '.join(re.findall(amharic_reg, message.message))
 
-                message_date = message.date.strftime('%Y-%m-%d %H:%M:%S') if message.date else '[No Date]'
-                sender_id = message.sender_id if message.sender_id else '[No Sender ID]'
-                writer.writerow([
-                    message_date, 
-                    sender_id,
-                    message.id,
-                    amharic_text.strip()
-                ])
+                # Only write the row if Amharic content is found
+                if amharic_text.strip():
+                    message_date = message.date.strftime('%Y-%m-%d %H:%M:%S') if message.date else '[No Date]'
+                    sender_id = message.sender_id if message.sender_id else '[No Sender ID]'
+                    writer.writerow([
+                        message_date, 
+                        sender_id,
+                        message.id,
+                        amharic_text.strip()
+                    ])
 
             print(f"Finished scraping {channel_username}")
 
@@ -62,3 +62,4 @@ def start_scraping(channel, csv_file='telegram_data.csv'):
     client = TelegramClient('scraping_session', api_id, api_hash)
     # Use asyncio.run() to run the asynchronous scraping function
     asyncio.run(scrape_telegram_channels(client, channel, csv_file))
+
