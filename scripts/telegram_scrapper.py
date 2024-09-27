@@ -37,7 +37,7 @@ async def scrape_telegram_channels(client, channel, csv_file='telegram_data.csv'
             async for message in client.iter_messages(entity, limit=limit):
                 amharic_reg = r'[\u1200-\u137F0-9\+\-_]+'
                 amharic_text = ' '.join(re.findall(amharic_reg, message.message))
-
+                print(amharic_text)
                 # Only write the row if Amharic content is found
                 if amharic_text.strip():
                     message_date = message.date.strftime('%Y-%m-%d %H:%M:%S') if message.date else '[No Date]'
