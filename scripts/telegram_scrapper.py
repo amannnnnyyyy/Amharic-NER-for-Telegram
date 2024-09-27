@@ -19,7 +19,7 @@ client = TelegramClient('scraping_session', api_id, api_hash)
 
 # Define the CSV file to store the data
 csv_file = 'telegram_data.csv'
-channel_username='ZemenExpress'
+channel_username='@ZemenExpress'
 # Function to write messages to the CSV file
 def write_to_csv(message_date, sender_id, message_id, amharic_text):
     """Append a message to the CSV file."""
@@ -39,7 +39,7 @@ async def scrape_telegram_channels(channel):
     Args:
     channel : A Telegram channel username to scrape.
     """
-    
+    await client.start()  
     with open(csv_file, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(['Message Date', 'Sender ID', 'Message ID', 'Product Description'])  # Write CSV header
@@ -49,7 +49,7 @@ async def scrape_telegram_channels(channel):
         channel_title = entity.title
         print(f"Scraping historical data from {channel_username} ({channel_title})...")
 
-        async for message in client.iter_messages(entity, limit=150):
+        async for message in client.iter_messages(entity, limit=300):
             if message.message:
                 amharic_reg = r'[\u1200-\u137F0-9\+\-_]+'
                 amharic_text = ' '.join(re.findall(amharic_reg, message.message))
@@ -84,10 +84,10 @@ def start_scraping(channel):
     Args:
     channel : A list of Telegram channel usernames to scrape.
     """
-    client.start()  
+   
     print("Scrapping data...")
-    scrape_telegram_channels(channel) 
-    # asyncio.run(scrape_telegram_channels(channel))
+    # scrape_telegram_channels(channel) 
+    asyncio.run(scrape_telegram_channels(channel))
     print("Listening for real-time messages...")
     client.run_until_disconnected()
       
