@@ -1,2 +1,5 @@
 venv
-notebooks/*.csv
+/photos
+*.session
+*.csv
+*.conll
